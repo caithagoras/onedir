@@ -13,12 +13,12 @@ class SendMsg(Protocol):
         
     def sendMessage(self, msg):
         self.transport.write(msg)
-        print ("Sent message")
+        #print ("Sent message")
         
     def dataReceived(self, data):
-        if (data == "Login_accepted"):
+        if data == "Login_accepted":
             print("Login attempt succeeded. You are logged in.")
-        elif (data == "Login_rejected"):
+        elif data == "Login_rejected":
             print("Login attempt failed. You are not logged in.")
 
 point = TCP4ClientEndpoint(reactor, "localhost", 3240)
