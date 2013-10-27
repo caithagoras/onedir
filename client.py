@@ -5,7 +5,10 @@ from twisted.internet.endpoints import TCP4ClientEndpoint, connectProtocol
 class SendMsg(Protocol):
     
     def connectionMade(self):
-        reactor.callLater(2,self.sendMessage, "validate\tTom\twrongPassword")
+        user = raw_input("Username: ")
+        pword = raw_input("Password: ")
+        reactor.callLater(2,self.sendMessage, "validate\t" + user + "\t" + pword)
+        #reactor.callLater(2,self.sendMessage, "validate\tTom\tpassword123")
         print ("Connection made.")
         
     def sendMessage(self, msg):
