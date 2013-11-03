@@ -1,0 +1,11 @@
+create a local repo. 
+git pull origin master
+git add file.ext
+git commit -m "commit message"
+git push origin master
+
+
+to view recent activity: 
+git log
+
+
