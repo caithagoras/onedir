@@ -1,22 +1,7 @@
 from twisted.internet import reactor, protocol
 import os,json
 
-fname="asdf.png"
-
-'''
-class DataObject():
-
-    f = file
-    fname = ''
-    fsize = 0
-
-
-    def __init__(self, fname, format = 'binary'): 
-        self.fname = fname
-        if format != 'binary':
-            print 'unsupported file write format in DataObject constructor'
-        self.f = open(fname, 'rb')
-        '''
+fname = "asdf.png"
 
 
 class EchoClient(protocol.Protocol):
@@ -24,8 +9,7 @@ class EchoClient(protocol.Protocol):
     def connectionMade(self):
         print 'establishing connection with server'
         fsize = os.path.getsize(fname) 
-        self.transport.write(json.dumps({'file':{'name': fname, 'size':fsize}}))
-
+        self.transport.write(json.dumps({'name': fname, 'size':fsize}))
 
     def sendFile(self):
         print 'sending file: ' + fname 
@@ -55,14 +39,11 @@ class EchoFactory(protocol.ClientFactory):
         reactor.stop()
 
 
-# this connects the protocol to a server runing on port 8000
 def main():
     f = EchoFactory()
-    #reactor.connectTCP("localhost", 8002, f)
-    reactor.connectTCP('172.25.203.215', 8002, f)
+    reactor.connectTCP('localhost', 8000, f)
     reactor.run()
 
-# this only runs if the module was *not* imported
 if __name__ == '__main__':
     main()
 
