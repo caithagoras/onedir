@@ -14,6 +14,8 @@ if (WIN_BUILD):
     fileDir = "C:\onedir"
 
 #====Class Def====
+
+
 class CoordinationManager:
 
     outputHook = None
@@ -51,26 +53,21 @@ class CoordinationManager:
     def loginCB(self, success, admin, msg):
         self.outputHook.getOutput(msg)
 
+    def logout(self, user):
+        if self.serverConnection.working:
+            return "Connection is currently busy. Try again in a minute."
+        else:
+            self.serverConnection.logout(user, self.logoutCB)
+            return "Attempting to logout. Please wait."
+
+    def logoutCB(self, success, admin, msg):
+        self.outputHook.getOutput(msg)
+
 
 class TestHook:
 
     def getOutput(self, msg):
         print(msg)
-
-#hook = TestHook()
-#manager = CoordinationManager()
-#manager.init(hook)
-#time.sleep(3)
-#hook.getOutput(manager.createAccount("Bobvo", "password", "true"))
-#print manager.createAccount("Bob", "password", "true")
-#time.sleep(3)
-#hook.getOutput(manager.createAccount("Bob", "password", "false"))
-#time.sleep(3)
-#hook.getOutput(manager.login("Bob", "abc"))
-#time.sleep(3)
-#hook.getOutput(manager.login("Bob", "password"))
-#time.sleep(3)
-#hook.getOutput(manager.createAccount("Bobvo", "password", "true"))
 
 
 class InputManager:
@@ -79,20 +76,31 @@ class InputManager:
     CoManager = CoordinationManager()
     CoManager.init(hook)
     input = ""
+    user = ""
 
     def parse(self):
         while self.input != "quit":
             if self.input == "help":
-                print "===Commands===\nlogin\ncreate account\nquit\n"
+                print "===Commands===\nlogin\ncreate account\nsign out\nquit\n"
             elif self.input == "login":
-                user = raw_input("Username: ")
+                self.user = raw_input("Username: ")
                 password = raw_input("Password: ")
-                self.hook.getOutput(self.CoManager.login(user, password))
+                option = raw_input("Log in automatically (yes/no)? ")
+                if option == "yes":
+                    myFile = open("Login.txt", 'wb')
+                    myFile.write(self.user + " " + password)
+                    myFile.close()
+                self.hook.getOutput(self.CoManager.login(self.user, password))
             elif self.input == "create account":
-                user = raw_input("Username: ")
+                self.user = raw_input("Username: ")
                 password = raw_input("Password: ")
                 admin = raw_input("Admin: ")
-                self.hook.getOutput(self.CoManager.createAccount(user, password, admin))
+                self.hook.getOutput(self.CoManager.createAccount(self.user, password, admin))
+            elif self.input == "sign out":
+                #send message to server to log out
+                self.hook.getOutput(self.CoManager.logout(self.user))
+                os.remove("Login.txt")
+                print "You are now signed out."
             else:
                 print "Not a valid command - please try again."
             self.start()
@@ -102,10 +110,21 @@ class InputManager:
 
     def start(self):
         time.sleep(2)
+        #print os.path.isfile("Login.txt")
+        #print self.user == ""
+        if os.path.isfile("Login.txt") and self.user == "":                 # if this file exists
+            myFile = open("Login.txt", 'rb')            # open it
+            credentials = myFile.read()                 # read it
+            myFile.close()
+            pieces = credentials.split("\n")[0].split("\r")[0].split(" ")  # separate it by delimiter
+            self.user = pieces[0]
+            password = pieces[1]
+            print "Logging in as " + self.user + "."         # say you're logging in and attempt to do so
+            self.hook.getOutput(self.CoManager.login(self.user, password))
+            time.sleep(2)
         self.input = raw_input("-------------------------\nWhat would you like to do?\nType "
-                               "'help' for possible commands or 'quit' to quit\n")
+                               "'help' for possible commands or 'quit' to quit.\n")
         self.parse()
 
 reader = InputManager()
 reader.start()
-

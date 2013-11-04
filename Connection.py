@@ -68,6 +68,13 @@ class Connection(Protocol):
         self.password = password
         self.sendMessage("login\t" + user + "\t" + password)
 
+    def logout(self, user, callback):
+        self.working = True
+        self.process = "logout"
+        self.callback = callback
+        self.user = user
+        self.sendMessage("logout\t" + user)
+
     def create(self, user, password, admin, callback):
         self.working = True
         self.process = "login"
