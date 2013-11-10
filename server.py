@@ -7,6 +7,7 @@ database = {"Tom": "password123",
             "Joe": "thisIsPassword",
             "Jim": "123456abcd"}
 
+
 class UserConnection(Protocol):
 
     authenticated = False
