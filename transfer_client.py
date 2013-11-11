@@ -49,29 +49,69 @@ class FileIOClient(basic.LineReceiver):
 
     def connectionMade(self):
     	print 'FileIOClient:connectionMade'
+    	print 'debug: ' +  str(self.upload)
 
-    	if self.upload == True:
+        if not self.upload:
+            print 'FileIOClient:download requested'
+            message = 'download'
+            filesize = 0
+
+    	if self.upload:
 	    	print 'FileIOClient:upload requested'
 	    	message = 'upload'
 	    	filesize = self.insize
 
-		if self.upload == False:
-		    print 'FileIOClient:download requested'
-		    message = 'download'
-		    filesize = 0
-
-		self.transport.write('%s %s %s\r\n' %(message,  str(self.path), filesize))
-	    
-		if self.upload == True:
+        self.transport.write('%s %s %s\r\n' %(message,  str(self.path), filesize))
+        if self.upload:
 			sender = basic.FileSender()
 			sender.CHUNK_SIZE = 2 ** 16
 			d = sender.beginFileTransfer(self.infile, self.transport, self._monitor)
 			d.addCallback(self.cbTransferCompleted)
+    
+    def lineReceived(self, line):
+            print 'FileIOProtocol:lineReceived ' + line
+            command = []
+            command = line.split(' ')
+            print command
+            if command[0] == 'download':      
+                file_path = command[1]
+                self.size = command[2]
+
+                file_path = 'downloaded_' + file_path
+
+                # if not os.path.isdir(file_path):
+                #     os.makedirs(file_path)
+
+                # self.outfilename = os.path.join('', file_path)
+                self.infilename = file_path
+
+                print 'FileIOProtocol:lineReceived downloading into ' + str(self.infilename)
+                try:
+                    self.outfile = open(self.infilename,'wb')
+                except Exception, value:
+                    print 'FileIOProtocol:lineReceived Unable to open file: "' + self.infilename + '"' +  str(value)
+                    self.transport.loseConnection()
+                    return
+
+                self.remain = int(self.size)
+                print 'FileIOProtocol:lineReceived Entering raw mode'
+                self.setRawMode()
+
+
+    def rawDataReceived(self, data):
+        self.remain -= len(data)
+        print 'remaining data: ' + str(self.remain)
+        self.outfile.write(data)
+        if self.remain == 0:
+            if self.outfile:
+                self.outfile.close()
+                print 'FileIOProtocol:transfer complete'
+
 
 
 	def connectionLost(self, reason):
-		basic.LineReceiver.connectionLost(self, reason)
 		print 'FileIOClient:connectionLost'
+		basic.LineReceiver.connectionLost(self, reason)
 		self.infile.close()
 		if self.completed:
 		    self.controller.completed.callback(self.result)
@@ -118,8 +158,8 @@ class TransferClient:
 
 def main():
 
-	TransferClient()._uploadOne('localhost', 8009, 'asdf.png')
-	#TransferClient()._uploadOne('localhost', 8009, 'hovercraft.MOV')
+	TransferClient()._uploadOne('localhost', 8010, 'asdf.png')
+	#TransferClient()._uploadOne('localhost', 8010, 'hovercraft.MOV')
 	#TransferClient()._downloadOne('localhost', 8010, 'asdf.png')
 	reactor.run()
 
