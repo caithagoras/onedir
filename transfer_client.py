@@ -45,7 +45,7 @@ class FileIOClient(basic.LineReceiver):
     def cbTransferCompleted(self, lastsent):
     	print 'FileIOClient:transfer completed'
         self.completed = True
-        self.transport.loseConnection()
+        #self.transport.loseConnection()
 
     def connectionMade(self):
     	print 'FileIOClient:connectionMade'
@@ -142,6 +142,9 @@ class FileIOClientFactory(protocol.ClientFactory):
 
 class TransferClient:
 
+    #__init__(self, ip_address, port):
+
+
 	def _uploadOne(self, ip_address, port, path):
 	    self.completed = defer.Deferred()
 	    f = FileIOClientFactory(path, True, 2, self)
@@ -154,15 +157,3 @@ class TransferClient:
 		f = FileIOClientFactory(path, False, 2, self)
 		reactor.connectTCP(ip_address, port, f)
 		return self.completed
-
-
-def main():
-
-	TransferClient()._uploadOne('localhost', 8010, 'asdf.png')
-	#TransferClient()._uploadOne('localhost', 8010, 'hovercraft.MOV')
-	#TransferClient()._downloadOne('localhost', 8010, 'asdf.png')
-	reactor.run()
-
-
-if __name__ == '__main__':
-	main()

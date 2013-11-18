@@ -32,7 +32,7 @@ class FileIOProtocol(basic.LineReceiver):
     def cbTransferCompleted(self, lastsent):
         print 'FileIOClient:transfer completed'
         self.completed = True
-        self.transport.loseConnection()
+        #self.transport.loseConnection()
 
     def lineReceived(self, line):
         print 'FileIOProtocol:lineReceived ' + line
@@ -142,11 +142,3 @@ class TransferServer():
         reactor.listenTCP(port, fileio)
         print 'Listening on port ' + str(port)
 
-
-def main():
-
-    server = TransferServer(8010)
-    reactor.run()
-
-if __name__ == '__main__':
-    main()
